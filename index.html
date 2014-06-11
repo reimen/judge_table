@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>JSON Table Test</title>
+  <script src="lib/jquery/jquery-1.11.1.min.js" type="text/javascript"></script>
+  <script src="js/main.js" type="text/javascript"></script>
+</head>
+<body>
+
+  <form id="submit_form">
+    <input name="id" type="number" placeholder="ID" />
+    <input name="status" type="number" placeholder="Status" />
+    <button type="submit">SUBMIT</button>
+  </form>
+
+  <table id="submit_info">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>STATUS</th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+
+</body>
+</html>
