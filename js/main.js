@@ -1,38 +1,8 @@
 $(function() {
 
-  /*-----------------------------------
-    未来さんからの指摘
-    1, 変数名
-      ・変数名が抽象的すぎる
-      ・将来の自分が見たとき理解できない
-      ・もっと具体的な変数名にするべき
-        ・たとえば、dataに入っているのはジャッジのステータスなので、
-          judge_statusにする、など
-    2, DRYの原則 & メソッドの責任
-      ・JSON.parseを繰り返している
-        ・これはこのメソッドをここで呼んでいるのがそもそも間違い
-      ・JSON文字列からオブジェクトへparseするのはこのメソッドの役割ではない
-      　・他のメソッドでパースして渡すべき
-    3, 不確定な値・フィールドを使うな！
-      ・data.idやdata.statusは保証されていない
-      ・クラスを定義するべき
-      ・Javascriptでクラスを作るのは複雑だが、coffeeなら楽につくれる
-        ・coffeeの勉強をしよう！
-
-    先生にはもう少しかかることを伝える
-    -> メールで
-
-    coffeeで書き直したらまず未来さんに見せる
-    -> チェックしてもらったら直して見せる
-
-    修正が済んだらソースコードをgithubに乗せて先生にURLを送る
-
-  -----------------------------------*/
-
-
   // for initialize
-  var init_data = {
-    records: [
+  var init_object = {
+    judge_statuses: [
       {
         id: 1,
         status: 0
@@ -51,41 +21,58 @@ $(function() {
       }
     ]
   };
-  var init_json = JSON.stringify(init_data);
-  init(init_json);
+  var init_json_string = JSON.stringify(init_object);
+  initJudgeStatusTable(init_json_string);
 
   // initialize table
-  function init(json) {
-    var obj = JSON.parse(json);
-    for(var i = 0; i < obj.records.length; i++) {
-      insert( obj.records[i] );
+  function initJudgeStatusTable(init_json_string) {
+    var init_json = JSON.parse(init_json_string);
+    for(var i = 0; i < init_json.judge_statuses.length; i++) {
+      insertJudgeStatus( init_json.judge_statuses[i] );
     }
   }
 
+
+
+
+
+  // receive json string
+  function receiveJsonString(json_string) {
+    var judge_status = JSON.parse(json_string);
+    // validation
+    if(!judge_status.id || !judge_status.status) return;
+
+    judge_status.id = Number(judge_status.id);
+    judge_status.status = Number(judge_status.status);
+
+    switch(judge_status.status) {
+      case 0:
+        insertJudgeStatus(judge_status);
+        break;
+      case 1:
+        updateJudgeStatus(judge_status);
+        break;
+      default:
+        console.log("invalid value: judge_status.status = " + judge_status.status);
+        break;
+    }
+  }
 
   // update and insert
-  function update(json) {
-    var data = JSON.parse(json);
-    if(!data.id || !data.status) return;
-
-    if(Number(data.status) == 0) {
-      insert(data);
-    }
-    else {
-      var $status = $("#" + data.id + " .status");
-      $status.text( convertStatus(data.status) );
-    }
+  function updateJudgeStatus(judge_status) {
+    var $status = $("#" + judge_status.id + " .status");
+    $status.text( statusText(judge_status.status) );
   }
 
-  function insert(data) {
-    var $new_record = $("<tr id=" + data.id + ">")
-                        .append('<td class="id">' + data.id + '</td>')
-                        .append('<td class="status">' + convertStatus(data.status) + '</td>');
+  function insertJudgeStatus(judge_status) {
+    var $new_record = $("<tr id=" + judge_status.id + ">")
+                        .append('<td class="id">' + judge_status.id + '</td>')
+                        .append('<td class="status">' + statusText(judge_status.status) + '</td>');
     $("#table-body").prepend($new_record);
   }
 
-  function convertStatus(status) {
-    switch (Number(status)) {
+  function statusText(status) {
+    switch (status) {
       case 0 :
         return "wait";
       case 1 :
@@ -96,13 +83,18 @@ $(function() {
   }
 
 
+
+
+
+
   // submit form
   $("#submit_form").on("submit", function(event) {
     event.preventDefault();
     var id = $(this).find("input[name=id]").val();
     var status = $(this).find("input[name=status]").val();
+    var json_string = JSON.stringify({ "id": id, "status": status });
 
-    update( JSON.stringify({ "id": id, "status": status }) );
+    receiveJsonString( json_string );
   });
 
 });
